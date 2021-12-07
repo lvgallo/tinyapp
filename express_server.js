@@ -9,20 +9,27 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
-
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 app.get("/urls", (req, res) => { 
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase };  // we can use urlDatabase instead templateVars on line 18 as well
   res.render("urls_index", templateVars);
 });
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  const shortURL = generateRandomString() // Log the POST request body to the console
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect(`/urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
+});
+app.get("/u/:shortURL", (req, res) => {
+  //if(urlDatabase.hasOwnProperty(req.params.shortURL)) {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  res.redirect(longURL);
+  //} else { }
 });
 function generateRandomString() {
   const randomString = Math.random().toString(36).substring(2,8);
@@ -30,9 +37,6 @@ return randomString;
 
 }
 app.get("/urls/:shortURL", (req, res) => {
-  // const urlDatabase = {
-  //   "b2xVn2": "http://www.lighthouselabs.ca",
-  //   "9sm5xK": "http://www.google.com"}
   const templateVars = { shortURL: req.params.shortURL, longURL:
   urlDatabase.shortURL };
   res.render("urls_show", templateVars);
