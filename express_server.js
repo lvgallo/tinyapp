@@ -18,7 +18,7 @@ app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase,
     username: req.cookies["username"]
   }; 
-  res.render("urls_index", templateVars);
+    res.render("urls_index", templateVars);
 });
 app.get("/urls/new", (req, res) => {
   const templateVars = { 
@@ -74,6 +74,10 @@ app.post('/urls/:shortURL/edit', (req, res)=> { // from server-side
 app.post('/login', (req, res)=> { // username
   // const username = req.body.username;
   const username = res.cookie('username', req.body.username);
+  res.redirect('/urls');
+});
+app.post('/logout', (req, res)=> { // username
+  res.clearCookie('username');
   res.redirect('/urls');
 });
 app.listen(PORT, () => {
