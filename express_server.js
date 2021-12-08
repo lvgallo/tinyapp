@@ -19,6 +19,10 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
+function generateRandomString() {
+  const randomString = Math.random().toString(36).substring(2,8);
+  return randomString;
+};
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString() // Log the POST request body to the console
   urlDatabase[shortURL] = req.body.longURL;
@@ -31,23 +35,40 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
   //} else { }
 });
-function generateRandomString() {
-  const randomString = Math.random().toString(36).substring(2,8);
-return randomString;
-
-}
 app.get("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL
   const templateVars = { shortURL: req.params.shortURL, longURL:
-  urlDatabase.shortURL };
+  urlDatabase[shortURL] };
   res.render("urls_show", templateVars);
-});
+  });
 app.get("/urls.json", (req, res) => { 
   res.json(urlDatabase); // print the object urlDatabase
 });
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n"); //World - bold as html 
 });
+app.post('/urls/:shortURL/delete', (req, res)=> {
+  const shortURL = req.params.shortURL;
+  //const longURL = urlDatabase[shortURL];
+  delete urlDatabase[shortURL];
+  res.redirect('/urls')
+});
+// app.get('/urls/:shortURL', (req, res)=> { //from client side i dont need this because it is working on before
+//    res.redirect('/urls:shortURL')
+// });
 
+app.post('/urls/:shortURL/edit', (req, res)=> { // from server-side
+  const newLongURL = req.body.newLongURL;
+  const shortURL = req.params.shortURL;
+  urlDatabase[shortURL] = newLongURL;
+  res.redirect('/urls');
+});
+app.post('/login', (req, res)=> { // username
+  const username = req.body.username;
+  res.cookie('username', username);
+  console.log(username)
+  res.redirect('/urls');
+});
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
