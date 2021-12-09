@@ -82,12 +82,10 @@ app.post('/urls', (req, res) => {
     user: users[req.cookies['user_id']]
   };
     if (templateVars.user) {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = {longURL : req.body.longURL,
-  userID: templateVars.user.id}
-  
-  console.log(urlDatabase[shortURL])
-  res.redirect(`/urls/${shortURL}`);
+      const shortURL = generateRandomString();
+      urlDatabase[shortURL] = {longURL : req.body.longURL,
+      userID: templateVars.user.id}
+      res.redirect(`/urls/${shortURL}`);
   } else {
     res.send('Please Register and Login to have access to this magic feature')
   }
@@ -95,8 +93,12 @@ app.post('/urls', (req, res) => {
 
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL;
-  res.redirect(longURL);
+    if (urlDatabase[shortURL]) {
+      const longURL = urlDatabase[shortURL].longURL;
+      res.redirect(longURL);
+    } else {
+      res.send('ShortURL not found');
+    }
 });
 
 app.get('/urls/:shortURL', (req, res) => {
