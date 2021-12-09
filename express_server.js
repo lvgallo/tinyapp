@@ -13,14 +13,15 @@ app.set('view engine', 'ejs');
 // };
 const urlDatabase = {
   b6UTxQ: {
-      longURL: "https://www.tsn.ca",
-      userID: "ga7399"
+    longURL: "https://www.tsn.ca",
+    userID: "ga7399"
   },
   i3BoGr: {
-      longURL: "https://www.google.ca",
-      userID: "ga7399"
+    longURL: "https://www.google.ca",
+    userID: "ga7399"
   }
 };
+
 const users = {
   "ga7399": {
     id: "ga7399",
@@ -54,7 +55,7 @@ app.get('/urls', (req, res) => {
   const templateVars = { urls: urlsForUser(req.cookies['user_id']),
     user: users[req.cookies['user_id']]
   };
-   res.render('urls_index', templateVars);
+  res.render('urls_index', templateVars);
 });
 
 // http://localhost:8080/urls/news -> webpage showing the textbox to input a new URL and using username stored in cookies
@@ -62,12 +63,11 @@ app.get('/urls/new', (req, res) => {
   const templateVars = {
     user: users[req.cookies['user_id']]
   };
-    if (templateVars.user) {
-      res.render('urls_new', templateVars);
-    } else {
-
-      res.redirect('/login');
-    }
+  if (templateVars.user) {
+    res.render('urls_new', templateVars);
+  } else {
+    res.redirect('/login');
+  }
 });
 
 // random string 6 characters, alphanumeric, lower and upper case
@@ -77,78 +77,88 @@ const generateRandomString = function() {
 };
 
 // create a new short URL and redirect the user to /urls page, with shortURL and longURL
-const urlsForUser = function (id) {
+const urlsForUser = function(id) {
   let newDatabase = {};
-  for (const shorts in urlDatabase){
-    if(urlDatabase[shorts].userID === id) {
-      newDatabase[shorts]=urlDatabase[shorts]
+  for (const shorts in urlDatabase) {
+    if (urlDatabase[shorts].userID === id) {
+      newDatabase[shorts] = urlDatabase[shorts];
     }
   }
   return newDatabase;
 };
 
 app.post('/urls', (req, res) => {
-  const templateVars = { 
+  const templateVars = {
     user: users[req.cookies['user_id']]
   };
-    if (templateVars.user) {
+  if (templateVars.user) {
       
-      const shortURL = generateRandomString();
-      urlDatabase[shortURL] = {longURL : req.body.longURL,
-        userID: templateVars.user.id}
-        res.redirect(`/urls/${shortURL}`);
-      } else {
-        res.send('Please Register and Login to have access to this magic feature')
-      }      
+    const shortURL = generateRandomString();
+    urlDatabase[shortURL] = {longURL : req.body.longURL,
+      userID: templateVars.user.id};
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.send('Please Register and Login to have access to this magic app');
+  }
 });
 
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-    if (urlDatabase[shortURL]) {
-      const longURL = urlDatabase[shortURL].longURL;
-      res.redirect(longURL);
-    } else {
-      res.send('ShortURL invalid');
-    }
+  if (urlDatabase[shortURL]) {
+    const longURL = urlDatabase[shortURL].longURL;
+    res.redirect(longURL);
+  } else {
+    res.send('ShortURL invalid');
+  }
 });
 
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const templateVars = { shortURL: req.params.shortURL,
-    longURL: urlDatabase[shortURL].longURL,
-    user: users[req.cookies['user_id']]
-  };
-    res.render('urls_show', templateVars);
-  });
+  
+  if (!req.cookies['user_id']) { //user is not logged in
+    res.send('User is not logged in');
+  } else { //user is logged in
+    if (urlDatabase[shortURL]) { //shortURL exists in the urlDatabase
+      const newDatabase = urlsForUser(req.cookies['user_id']);
+      if (Object.prototype.hasOwnProperty.call(newDatabase, shortURL)) { //shortURL is authorized for the user
+        const templateVars = { shortURL: req.params.shortURL,
+          longURL: urlDatabase[shortURL].longURL,
+          user: users[req.cookies['user_id']]
+        };
+        res.render('urls_show', templateVars);
+      } else {//shortURL is not authorized for the user
+        res.send('You are not authorized to see it');
+      }
+    } else { //shortURL does not exists in the urlDatabase
+      res.send('ShortURL invalid');
+    }
+  }
+});
 
 //delete a set shortURL and longURL
 app.post('/urls/:shortURL/delete', (req, res)=> {
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect('/urls');
+  const newDatabase = urlsForUser(req.cookies['user_id']);
+  if (Object.prototype.hasOwnProperty.call(newDatabase, shortURL)) {
+    delete urlDatabase[shortURL];
+    res.redirect('/urls');
+  } else {
+    res.send('You are not authorized to delete it');
+  }
 });
 
 //edit a longURL
 app.post('/urls/:shortURL/edit', (req, res)=> { // from server-side
   const newLongURL = req.body.newLongURL;
   const shortURL = req.params.shortURL;
-  urlDatabase[shortURL].longURL = newLongURL;
-  res.redirect('/urls');
+  const newDatabase = urlsForUser(req.cookies['user_id']);
+  if (Object.prototype.hasOwnProperty.call(newDatabase, shortURL)) {
+    urlDatabase[shortURL].longURL = newLongURL;
+    res.redirect('/urls');
+  } else {
+    res.send('You are not authorized to edit it');
+  }
 });
-
-// input username login and storing in cookies
-// app.post('/login', (req, res)=> {
-//   const templateVars = {}
-//   // const username = req.body.username;
-//   const username = res.cookie('username', req.body.username); //switch cookie - username for cookie - user id
-//   res.redirect('/urls');
-//});
-
-// // username logout and storing in cookies
-// app.post('/logout', (req, res)=> { // username
-//   res.clearCookie('username');
-//   res.redirect('/urls');
-// });
 
 //creating a register page with email and password
 app.get('/register', (req, res) => {
