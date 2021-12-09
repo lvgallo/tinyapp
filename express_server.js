@@ -97,7 +97,7 @@ app.get('/u/:shortURL', (req, res) => {
       const longURL = urlDatabase[shortURL].longURL;
       res.redirect(longURL);
     } else {
-      res.send('ShortURL not found');
+      res.send('ShortURL invalid');
     }
 });
 
