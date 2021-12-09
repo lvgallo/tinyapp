@@ -3,7 +3,6 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser'); //library that converts request body from a buffer to a string.
 const cookieParser = require('cookie-parser'); // library to use cookies
-const { application } = require('express');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
@@ -13,27 +12,27 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-const users = { 
+const users = {
   "ga7399": {
-    id: "ga7399", 
-    email: "qwe@example.com", 
+    id: "ga7399",
+    email: "qwe@example.com",
     password: "123"
   },
- "Sw28e5": {
-    id: "Sw28e5", 
-    email: "asd@example.com", 
+  "Sw28e5": {
+    id: "Sw28e5",
+    email: "asd@example.com",
     password: "abc"
   }
 };
 //helper function to find emails
 const findUserByEmail = function(email) {
-  for(const userID in users) { //userID is the id random
+  for (const userID in users) { //userID is the id random
     const user = users[userID];
-      if(user.email === email) {
-        return user;
+    if (user.email === email) {
+      return user;
     }
   }
-    return null;
+  return null;
 };
 
 // http://localhost:8080/ -> Hello!
@@ -46,7 +45,6 @@ app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase,
     user: users[req.cookies['user_id']]
   };
-  console.log(templateVars)
   res.render('urls_index', templateVars);
 });
 
@@ -122,9 +120,9 @@ app.post('/urls/:shortURL/edit', (req, res)=> { // from server-side
 app.get('/register', (req, res) => {
   const templateVars = {
     user: null
-  }
-  res.render('urls_regUser', templateVars)
-})
+  };
+  res.render('urls_regUser', templateVars);
+});
 
 //creating a register page with email and password
 app.post('/register', (req, res) => {
@@ -136,7 +134,7 @@ app.post('/register', (req, res) => {
   const user = findUserByEmail(email); //calling the helper function
   if (user) { // user.email === email, return user
     return res.status(400).send('Ops! An user with same email already exists!');
-  } 
+  }
   const id = generateRandomString();
   users[id] = {
     id: id,
@@ -151,8 +149,8 @@ app.post('/register', (req, res) => {
 app.get('/login', (req, res) => {
   const templateVars = {
     user: null
-  }
-  res.render('urls_login', templateVars)
+  };
+  res.render('urls_login', templateVars);
 });
 
 //login in with email and password
@@ -161,12 +159,13 @@ app.post('/login', (req, res)=> {
   const password = req.body.password;
   
   const user = findUserByEmail(email);
-  console.log(user)
-  if (user && user.password === password) {
-    res.cookie('user_id', user.id)
+  if (!user) {
+    res.status(403).send('User can not be found');
+  } else if (user && user.password === password) {
+    res.cookie('user_id', user.id);
     res.redirect('/urls');
   } else {
-    res.send('Oh!! User is not found!')
+    res.status(403).send('Wrong Password! Try it again!');
   }
 });
 
