@@ -14,11 +14,11 @@ app.set('view engine', 'ejs');
 const urlDatabase = {
   b6UTxQ: {
       longURL: "https://www.tsn.ca",
-      userID: "aJ48lW"
+      userID: "ga7399"
   },
   i3BoGr: {
       longURL: "https://www.google.ca",
-      userID: "aJ48lW"
+      userID: "ga7399"
   }
 };
 const users = {
@@ -51,10 +51,10 @@ app.get('/', (req, res) => {
 
 // http://localhost:8080/urls -> webpage showing the index and using username stored in cookies
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase,
+  const templateVars = { urls: urlsForUser(req.cookies['user_id']),
     user: users[req.cookies['user_id']]
   };
-  res.render('urls_index', templateVars);
+   res.render('urls_index', templateVars);
 });
 
 // http://localhost:8080/urls/news -> webpage showing the textbox to input a new URL and using username stored in cookies
@@ -77,18 +77,29 @@ const generateRandomString = function() {
 };
 
 // create a new short URL and redirect the user to /urls page, with shortURL and longURL
+const urlsForUser = function (id) {
+  let newDatabase = {};
+  for (const shorts in urlDatabase){
+    if(urlDatabase[shorts].userID === id) {
+      newDatabase[shorts]=urlDatabase[shorts]
+    }
+  }
+  return newDatabase;
+};
+
 app.post('/urls', (req, res) => {
   const templateVars = { 
     user: users[req.cookies['user_id']]
   };
     if (templateVars.user) {
+      
       const shortURL = generateRandomString();
       urlDatabase[shortURL] = {longURL : req.body.longURL,
-      userID: templateVars.user.id}
-      res.redirect(`/urls/${shortURL}`);
-  } else {
-    res.send('Please Register and Login to have access to this magic feature')
-  }
+        userID: templateVars.user.id}
+        res.redirect(`/urls/${shortURL}`);
+      } else {
+        res.send('Please Register and Login to have access to this magic feature')
+      }      
 });
 
 app.get('/u/:shortURL', (req, res) => {
@@ -107,8 +118,8 @@ app.get('/urls/:shortURL', (req, res) => {
     longURL: urlDatabase[shortURL].longURL,
     user: users[req.cookies['user_id']]
   };
-  res.render('urls_show', templateVars);
-});
+    res.render('urls_show', templateVars);
+  });
 
 //delete a set shortURL and longURL
 app.post('/urls/:shortURL/delete', (req, res)=> {
