@@ -9,17 +9,24 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-
-      <form class="form-inline" action="/register" method="GET">
-        <label for="register"></label>
-          <button type="submit" style="border-color:black; background-color:transparent; border-radius: 8px; padding: 5px 18px; ">Register</button>
-        </form>
-
-      <form class="form-inline" action="/login" method="GET">
-        <label for="login"></label>
-          <button type="submit" style="border-color:black; background-color:transparent; border-radius: 8px; padding: 5px 18px; ">Login</button>
-        </form>
- 
+        <% if(user){ %>
+        <form class="form-inline" action="/logout" method="GET">
+          <label for="login"></label>
+            <button type="submit" style="border-color:black; background-color:transparent; border-radius: 8px; padding: 5px 18px; ">Logout</button>
+          </form>
+          <% } else { %> 
+            <form class="form-inline" action="/register" method="GET">
+              <label for="register"></label>
+                <button type="submit" style="border-color:black; background-color:transparent; border-radius: 8px; padding: 5px 18px; ">Register</button>
+              </form>
+      
+            <form class="form-inline" action="/login" method="GET">
+              <label for="login"></label>
+                <button type="submit" style="border-color:black; background-color:transparent; border-radius: 8px; padding: 5px 18px; ">Login</button>
+              </form>  
+            
+            
+            <% } %> 
     </div>
   </nav>
 </header>

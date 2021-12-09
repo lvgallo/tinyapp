@@ -15,12 +15,12 @@ const urlDatabase = {
 
 const users = { 
   "ga7399": {
-    id: "qwe", 
+    id: "ga7399", 
     email: "qwe@example.com", 
     password: "123"
   },
  "Sw28e5": {
-    id: "asd", 
+    id: "Sw28e5", 
     email: "asd@example.com", 
     password: "abc"
   }
@@ -46,6 +46,7 @@ app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase,
     user: users[req.cookies['user_id']]
   };
+  console.log(templateVars)
   res.render('urls_index', templateVars);
 });
 
@@ -111,15 +112,18 @@ app.post('/urls/:shortURL/edit', (req, res)=> { // from server-side
 //   res.redirect('/urls');
 //});
 
-// username logout and storing in cookies
-app.post('/logout', (req, res)=> { // username
-  res.clearCookie('username');
-  res.redirect('/urls');
-});
+// // username logout and storing in cookies
+// app.post('/logout', (req, res)=> { // username
+//   res.clearCookie('username');
+//   res.redirect('/urls');
+// });
 
 //creating a register page with email and password
 app.get('/register', (req, res) => {
-  res.render('urls_regUser')
+  const templateVars = {
+    user: null
+  }
+  res.render('urls_regUser', templateVars)
 })
 
 //creating a register page with email and password
@@ -145,20 +149,32 @@ app.post('/register', (req, res) => {
 
 //login page
 app.get('/login', (req, res) => {
-  res.render('urls_login')
+  const templateVars = {
+    user: null
+  }
+  res.render('urls_login', templateVars)
 });
 
 //login in with email and password
 app.post('/login', (req, res)=> {
-  const user = res.cookie('user_id', req.body.email); 
-  res.redirect('/urls');
+  const email = req.body.email;
+  const password = req.body.password;
+  
+  const user = findUserByEmail(email);
+  console.log(user)
+  if (user && user.password === password) {
+    res.cookie('user_id', user.id)
+    res.redirect('/urls');
+  } else {
+    res.send('Oh!! User is not found!')
+  }
 });
 
-//finishing the login in the login page
-// app.get('/loginLogin', (req, res) => {
-//   res.redirect('/urls')
-// })
-
+// email logout and storing in cookies
+app.get('/logout', (req, res)=> { // username
+  res.clearCookie('user_id');
+  res.redirect('/urls');
+});
 
 // print the object urlDatabase
 app.get('/urls.json', (req, res) => {
