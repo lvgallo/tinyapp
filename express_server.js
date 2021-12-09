@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser'); //library that converts request body from a buffer to a string.
 const cookieParser = require('cookie-parser'); // library to use cookies
+const bcrypt = require('bcryptjs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
@@ -172,6 +173,7 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   if (!email || !password) { //avoiding empty emails or empty emails
     res.status(400).send('Hey! email or password can not be empty!');
   }
@@ -183,8 +185,9 @@ app.post('/register', (req, res) => {
   users[id] = {
     id: id,
     email: email,
-    password: password
+    password: hashedPassword
   };
+  console.log(password, hashedPassword)
   res.cookie('user_id', users[id].id); //user.id = id inside the users[id] stored in the cookie
   res.redirect('/urls');
 });
@@ -201,11 +204,12 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res)=> {
   const email = req.body.email;
   const password = req.body.password;
-  
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  const validatePassword = bcrypt.compareSync(password, hashedPassword);
   const user = findUserByEmail(email);
   if (!user) {
     res.status(403).send('User can not be found');
-  } else if (user && user.password === password) {
+  } else if (user && validatePassword) {
     res.cookie('user_id', user.id);
     res.redirect('/urls');
   } else {
